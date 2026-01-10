@@ -1,27 +1,48 @@
-terraform {
-  cloud {
-    organization = "piru"
-    workspaces {
-      name = "piru-terraform"
-    }
-  }
-
-  required_providers {
-    google = {
-      source = "hashicorp/google"
-      version = "~> 5.0"
-    }
-  }
-}
-
 provider "google" {
-  # No ponemos credenciales aquí porque Terraform Cloud las leerá de las variables
-  region  = "us-central1"
+  region = "us-central1"
 }
 
-resource "google_storage_bucket" "mi_bucket_prueba_piru" {
-  # IMPORTANTE: Cambia este nombre, debe ser único en todo el mundo (como un email)
-  name          = "bucket-piru-prueba-aprender-123" 
+# Declaración de variables
+variable "tags" {
+  description = "Etiquetas por defecto (Centro de Costo General, Ambiente, etc)"
+  type        = map(string)
+  
+  default = {
+    cost-center = "infra-general"  # Valor por defecto si no se especifica otro
+    environment = "production"
+    managed-by  = "terraform"
+  }
+}
+
+# --- 1. Bucket Data Lake (Centro de costo: Analítica) ---
+resource "google_storage_bucket" "datalake_raw" {
+  name          = "empresa-piru-datalake-raw"
+  location      = "EU"
+  
+  # Fusionamos las etiquetas comunes con la específica de este bucket
+  labels = merge(var.tags, {
+    cost-center = "data-analytics" 
+  })
+}
+
+# --- 2. Bucket Assets (Centro de costo: Marketing) ---
+resource "google_storage_bucket" "assets_publicos" {
+  name          = "empresa-piru-assets-publicos"
   location      = "US"
-  force_destroy = true # Esto permite borrar el bucket aunque tenga archivos dentro
+
+  # Sobreescribimos el cost-center para este recurso
+  labels = merge(var.tags, {
+    cost-center = "marketing-web"
+  })
+}
+
+# --- 3. Bucket Logs (Centro de costo: Infra) ---
+resource "google_storage_bucket" "infra_logs" {
+  name          = "empresa-piru-infra-logs-01"
+  location      = "US"
+
+  # Aquí quizás usamos el default o forzamos uno de infra
+  labels = merge(var.tags, {
+    cost-center = "infra-ops"
+  })
 }

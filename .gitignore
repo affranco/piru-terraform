@@ -1,0 +1,23 @@
+# --- Directorios Pesados de Terraform ---
+# Esto es lo que más pesa (los plugins de Google, etc.)
+.terraform/
+
+# --- Archivos de Estado (Vital ignorar esto) ---
+# Contiene info sensible de tu infraestructura actual
+*.tfstate
+*.tfstate.backup
+
+# --- Seguridad (TUS LLAVES) ---
+# Ignora cualquier archivo JSON para proteger tu credenciales.json
+*.json
+# Ignora archivos de variables con secretos
+*.tfvars
+
+# --- Archivos de Sistema/Logs ---
+*.log
+.DS_Store
+Thumbs.db
+
+# --- Configuración de IDE ---
+.vscode/
+.idea/
