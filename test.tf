@@ -1,3 +1,10 @@
+terraform {
+  backend "gcs" {
+    bucket  = "empresa-piru-tfstate"  # El nombre exacto de tu bucket nuevo
+    prefix  = "terraform/state"       # Carpeta donde se guardará el archivo
+  }
+}
+
 provider "google" {
   region = "us-central1"
 }

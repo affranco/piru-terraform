@@ -1,3 +1,9 @@
+terraform {
+  backend "gcs" {
+    bucket  = "empresa-piru-tfstate"  # El bucket que creaste en el paso 1
+    prefix  = "terraform/state"       # Carpeta dentro del bucket
+  }
+}
 provider "google" {
   project     = "156352841902"  # Tu ID numérico (o el de letras si el numérico falla)
   region      = "us-central1"
