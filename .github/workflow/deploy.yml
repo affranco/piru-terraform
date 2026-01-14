@@ -3,11 +3,11 @@ name: "Terraform CD"
 on:
   push:
     branches:
-      - main  # Se ejecuta cuando haces push a la rama main
+      - main  # Se activa al subir cambios a la rama main
 
 permissions:
   contents: read
-  id-token: write   # <--- OBLIGATORIO: Permite la autenticación sin llaves
+  id-token: write   # OBLIGATORIO para la conexión segura sin llaves
 
 jobs:
   terraform:
@@ -18,33 +18,28 @@ jobs:
         shell: bash
 
     steps:
-      # 1. Bajar el código
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. Autenticación con Google (Usando la Federación que acabas de configurar)
+      # Autenticación con Google (Usando tu configuración federada)
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v2'
         with:
-          # Ruta exacta a tu Pool (Usa el Project Number 156352841902)
+          # Usamos el PROJECT NUMBER para el Pool (Google lo prefiere así)
           workload_identity_provider: 'projects/156352841902/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
-          # Tu cuenta de servicio (Usa el Project ID compact-env-197522)
+          # Usamos el PROJECT ID para la cuenta de servicio
           service_account: 'github-actions-sa@compact-env-197522.iam.gserviceaccount.com'
 
-      # 3. Instalar Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # 4. Inicializar
       - name: Terraform Init
         run: terraform init
 
-      # 5. Planear
       - name: Terraform Plan
         run: terraform plan -input=false
 
-      # 6. Aplicar (Solo si es la rama main)
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve -input=false
