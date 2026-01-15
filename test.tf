@@ -53,3 +53,15 @@ resource "google_storage_bucket" "infra_logs" {
     cost-center = "infra-ops"
   })
 }
+
+resource "google_storage_bucket" "default" {
+  name          = "empresa-piru-tfstate" # (Tu nombre de bucket actual)
+  location      = "us-central1"
+  
+  # --- AGREGA ESTO ---
+  labels = {
+    environment = "dev"
+    managed_by  = "github-actions"
+  }
+  # -------------------
+}
