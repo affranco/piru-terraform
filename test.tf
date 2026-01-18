@@ -44,8 +44,3 @@ resource "google_storage_bucket" "assets_publicos" {
 # --- LA TRAMPA PARA TRIVY ---
 # Este recurso es sintácticamente correcto, pero INSEGURO.
 # Trivy detectará que estamos dando acceso a "allUsers" y bloqueará el despliegue.
-resource "google_storage_bucket_iam_member" "public_access" {
-  bucket = google_storage_bucket.datalake_raw.name
-  role   = "roles/storage.objectViewer"
-  member = "allUsers" # <--- ¡ALERTA CRÍTICA! 🚨
-}
