@@ -1,13 +1,13 @@
 terraform {
   backend "gcs" {
-    bucket  = "empresa-piru-tfstate"  # El bucket del estado (NO TOCAR)
+    bucket  = "empresa-piru-tfstate"  # El bucket del estado (NO TOCAR, debe ser texto plano)
     prefix  = "terraform/state"
   }
 }
 
 provider "google" {
   region = "us-central1"
-  # project = "compact-env-197522" # (Opcional si ya lo toma del entorno)
+  # project = "compact-env-197522" # (Opcional, ya lo toma de la autenticación)
 }
 
 # --- Declaración de variables ---
@@ -26,7 +26,7 @@ variable "tags" {
 resource "google_storage_bucket" "datalake_raw" {
   name          = "empresa-piru-datalake-raw"
   location      = "US"
-  force_destroy = true # Útil para pruebas, permite borrar bucket con datos
+  force_destroy = true # Útil para pruebas, permite borrar el bucket aunque tenga archivos
 
   # Fusionamos las etiquetas comunes con la específica de este bucket
   labels = merge(var.tags, {
