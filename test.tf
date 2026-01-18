@@ -1,7 +1,7 @@
 terraform {
   backend "gcs" {
-    bucket  = "empresa-piru-tfstate"
-    prefix  = "terraform/state"
+    bucket = "empresa-piru-tfstate"
+    prefix = "terraform/state"
   }
 }
 
@@ -24,9 +24,9 @@ resource "google_storage_bucket" "datalake_raw" {
   name          = "empresa-piru-datalake-raw"
   location      = "US"
   force_destroy = true
-  
+
   labels = merge(var.tags, {
-    cost-center = "data-analytics" 
+    cost-center = "data-analytics"
   })
 }
 
@@ -47,5 +47,5 @@ resource "google_storage_bucket" "assets_publicos" {
 resource "google_storage_bucket_iam_member" "public_access" {
   bucket = google_storage_bucket.datalake_raw.name
   role   = "roles/storage.objectViewer"
-  member = "allUsers"  # <--- ¡ALERTA CRÍTICA! 🚨
+  member = "allUsers" # <--- ¡ALERTA CRÍTICA! 🚨
 }

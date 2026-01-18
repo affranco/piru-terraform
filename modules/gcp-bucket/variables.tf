@@ -17,9 +17,9 @@ variable "location" {
 variable "tags" {
   description = "Etiquetas por defecto (Centro de Costo General, Ambiente, etc)"
   type        = map(string)
-  
+
   default = {
-    cost-center = "infra-general"  # Valor por defecto si no se especifica otro
+    cost-center = "infra-general" # Valor por defecto si no se especifica otro
     environment = "production"
     managed-by  = "terraform"
   }
