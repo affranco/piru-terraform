@@ -3,11 +3,12 @@ name: "Terraform CD"
 on:
   push:
     branches:
-      - main  # Se activa al subir cambios a la rama main
+      - main
 
 permissions:
   contents: read
-  id-token: write   # OBLIGATORIO para la conexión segura sin llaves
+  id-token: write
+  security-events: write # Necesario para mostrar reportes de seguridad
 
 jobs:
   terraform:
@@ -21,21 +22,43 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Autenticación con Google (Usando tu configuración federada)
+      # 1. Autenticación con Google
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v2'
         with:
-          # Usamos el PROJECT NUMBER para el Pool (Google lo prefiere así)
           workload_identity_provider: 'projects/156352841902/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
-          # Usamos el PROJECT ID para la cuenta de servicio
           service_account: 'github-actions-sa@compact-env-197522.iam.gserviceaccount.com'
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
+      # 2. Inicializar
       - name: Terraform Init
         run: terraform init
+
+      # --- NUEVOS CONTROLES DE INTEGRIDAD ---
+
+      # A. Control de Formato: Falla si el código está desordenado
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      # B. Control de Validez: Falla si hay errores de sintaxis
+      - name: Terraform Validate
+        run: terraform validate
+
+      # C. Control de Seguridad (Trivy): Falla si hay riesgos ALTOS o CRITICOS
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          hide-progress: false
+          format: 'table'
+          exit-code: '1'          # <--- ESTO ES LA CLAVE: 1 = Cancela el pipeline si hay error
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH' # Solo nos detiene si es grave
+      
+      # ---------------------------------------
 
       - name: Terraform Plan
         run: terraform plan -input=false

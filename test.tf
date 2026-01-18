@@ -1,20 +1,17 @@
 terraform {
   backend "gcs" {
-    bucket  = "empresa-piru-tfstate"  # El bucket del estado (NO TOCAR, debe ser texto plano)
+    bucket  = "empresa-piru-tfstate"
     prefix  = "terraform/state"
   }
 }
 
 provider "google" {
   region = "us-central1"
-  # project = "compact-env-197522" # (Opcional, ya lo toma de la autenticación)
 }
 
-# --- Declaración de variables ---
 variable "tags" {
-  description = "Etiquetas por defecto (Centro de Costo General, Ambiente, etc)"
+  description = "Etiquetas por defecto"
   type        = map(string)
-  
   default = {
     cost-center = "infra-general"
     environment = "production"
@@ -22,26 +19,33 @@ variable "tags" {
   }
 }
 
-# --- 1. Bucket Data Lake (Centro de costo: Analítica) ---
+# --- 1. Bucket Data Lake ---
 resource "google_storage_bucket" "datalake_raw" {
   name          = "empresa-piru-datalake-raw"
   location      = "US"
-  force_destroy = true # Útil para pruebas, permite borrar el bucket aunque tenga archivos
-
-  # Fusionamos las etiquetas comunes con la específica de este bucket
+  force_destroy = true
+  
   labels = merge(var.tags, {
     cost-center = "data-analytics" 
   })
 }
 
-# --- 2. Bucket Assets (Centro de costo: Marketing) ---
+# --- 2. Bucket Assets ---
 resource "google_storage_bucket" "assets_publicos" {
   name          = "empresa-piru-assets-publicos"
   location      = "US"
   force_destroy = true
 
-  # Sobreescribimos el cost-center para este recurso
   labels = merge(var.tags, {
     cost-center = "marketing-web"
   })
+}
+
+# --- LA TRAMPA PARA TRIVY ---
+# Este recurso es sintácticamente correcto, pero INSEGURO.
+# Trivy detectará que estamos dando acceso a "allUsers" y bloqueará el despliegue.
+resource "google_storage_bucket_iam_member" "public_access" {
+  bucket = google_storage_bucket.datalake_raw.name
+  role   = "roles/storage.objectViewer"
+  member = "allUsers"  # <--- ¡ALERTA CRÍTICA! 🚨
 }
